@@ -1,0 +1,42 @@
+name: Build and Push Docker Images
+
+# Ini adalah pemicunya: jalankan saat ada 'push' ke branch 'main'
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    # Robotnya akan berjalan di server Ubuntu
+    runs-on: ubuntu-latest 
+    steps:
+      # 1. Ambil kode Anda dari GitHub
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      # 2. Login ke Docker Hub (menggunakan rahasia Anda)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Build dan Push image BACKEND
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Gunakan folder root (web) sebagai context
+          file: ./backend/Dockerfile # Lokasi Dockerfile backend
+          push: true
+          # Ini akan membuat image bernama: junaido/uts-backend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/uts-backend:latest
+
+      # 4. Build dan Push image FRONTEND
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend # Gunakan folder frontend sebagai context
+          file: ./frontend/Dockerfile # Lokasi Dockerfile frontend
+          push: true
+          # Ini akan membuat image bernama: junaido/uts-frontend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/uts-frontend:latest
